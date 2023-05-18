@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.19;
-/*test with f([1,1,1,1,1,1,1,1,1,1]) */
+/*test with f([1,1,1,1,1,1,1,1,1,1])  */
 
 contract C {
     uint[] public x; // the data location of x is storage
