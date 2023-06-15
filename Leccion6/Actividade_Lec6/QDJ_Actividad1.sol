@@ -1,56 +1,88 @@
-//SPDX-License-Identifier:UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8;
 
-contract Messagebox {
-    string[] private mensajes;
-    address private _admin;
-    mapping(address => uint) userTotalMensajes;
-    uint pago = 0.001 ether;
-    uint[] private fechaUnixUltimoMensaje;
+contract actividad1{
     
-    constructor ()  {
-        _admin = msg.sender;
+    struct llista{
+        string message;
+        uint fecha;
     }
+    address private _owner;
+    uint public ultimafecha;
+    mapping(address=>llista[]) private mensajes;
+    uint private totalElemLlista;
+    address[] private emisores;
+    uint constant pago = 0.001 ether;
 
-    modifier soloAdmin(uint _idMensaje) {
-        require(msg.sender == _admin);
-        _;
-    }  
-
-    function addMessage(string memory _nuevoMensaje) public payable {    
-         if(userTotalMensajes[msg.sender] == 0){
-            mensajes.push(_nuevoMensaje);
-            fechaUnixUltimoMensaje.push(block.timestamp);
-            userTotalMensajes[msg.sender]++;
-         }else{
-            require(msg.value-pago >= 0);
-            payable(msg.sender).transfer(msg.value-pago);
-            mensajes.push(_nuevoMensaje);
-            userTotalMensajes[msg.sender]++;
-            fechaUnixUltimoMensaje.push(block.timestamp);
-         }
-         
+    constructor(){
+        _owner=msg.sender;
     }
-    
-    function getMessage(uint _idMensaje) public view returns (string memory) {
-        return mensajes[_idMensaje];
-    }
-
-    function mostraMensajes() public view returns (string[] memory) {
-        return mensajes;
-    }
-    function mostrarFechaUltimoMensaje() public view returns (uint) {
-        return fechaUnixUltimoMensaje[fechaUnixUltimoMensaje.length-1];
-    }
-
-    function borrarMensaje(uint _idMensaje) public soloAdmin(_idMensaje) {
-        require(_idMensaje <= mensajes.length);
-        for(uint i=_idMensaje; i<mensajes.length-1; i++) {
-            mensajes[i] = mensajes[i+1];
-            fechaUnixUltimoMensaje[i] = fechaUnixUltimoMensaje[i+1];
+    function getMessage(address addr, uint index) public view returns (string memory,uint){
+        
+        if(mensajes[addr].length>0 && index < mensajes[addr].length){
+            return (string.concat("Mensaje: ",mensajes[addr][index].message),mensajes[addr][index].fecha);
         }
-        mensajes.pop();
-        fechaUnixUltimoMensaje.pop();
-        userTotalMensajes[msg.sender]--;
+        if(index!=0 && index >= mensajes[addr].length){
+            return ("Indice incorrecto para la Lista de Mensajes.",0);
+        }
+        else{
+            return ("Lista de Mensajes vacia.",0);
+        }
     }
+    
+     function addMessage(string memory texto) external payable {
+        if(mensajes[msg.sender].length<1){
+
+            mensajes[msg.sender].push(llista({message:texto,fecha:block.timestamp}));
+            totalElemLlista+=1;
+            emisores.push(msg.sender);
+        }
+        else{
+            require(msg.value>=pago);
+            payable(msg.sender).transfer(msg.value - pago);
+            mensajes[msg.sender].push(llista({message:texto,fecha:block.timestamp}));
+            totalElemLlista+=1;
+
+        }
+        ultimafecha=block.timestamp;
+    }
+
+    function deleteMessage(address d, uint id) public {
+        require(msg.sender==_owner);
+        if(mensajes[_owner].length>0){
+            delete mensajes[d][id];
+        }
+    }
+
+    function mostrarMensajes() public view returns(string memory msgs){
+        msgs="";
+        for(uint i=0;i<totalElemLlista;i++){
+            for(uint j=0;j<emisores.length;j++){
+                msgs=string.concat(msgs,", ",mensajes[emisores[j]][i].message);
+            }
+        } 
+        return msgs;
+    }
+
+    function MostraMensajesEmisor(uint idEmisor) public view returns (llista[] memory) {
+        llista[] storage l;
+        l = mensajes[emisores[idEmisor]];
+        return l;
+    }
+    function addrEmisor(uint idEmisor) public view returns (address) {
+        return emisores[idEmisor];
+    }
+
+    function t1() public view returns (string[] memory ls){
+        uint cuenta=0;
+        for(uint i=0;i<totalElemLlista;i++){
+            for(uint j=0;j<emisores.length;j++){
+                //msgs=string.concat(msgs,", ",mensajes[emisores[j]][i].message);
+                ls[cuenta+=1]=mensajes[emisores[j]][i].message;
+            }
+        } 
+        return ls;
+    }
+
+
 }
