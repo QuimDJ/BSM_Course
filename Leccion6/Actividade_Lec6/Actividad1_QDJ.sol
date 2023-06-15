@@ -1,4 +1,4 @@
-//SPDX-License-Identifier:UNLICENSED
+//SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8;
 
 contract Messagebox {
@@ -7,7 +7,7 @@ contract Messagebox {
     mapping(address => uint) userTotalMensajes;
     uint pago = 0.001 ether;
     uint[] private fechaUnixUltimoMensaje;
-    
+
     constructor ()  {
         _admin = msg.sender;
     }
@@ -16,7 +16,6 @@ contract Messagebox {
         require(msg.sender == _admin);
         _;
     }  
-
     function addMessage(string memory _nuevoMensaje) public payable {    
          if(userTotalMensajes[msg.sender] == 0){
             mensajes.push(_nuevoMensaje);
@@ -29,13 +28,10 @@ contract Messagebox {
             userTotalMensajes[msg.sender]++;
             fechaUnixUltimoMensaje.push(block.timestamp);
          }
-         
-    }
-    
+    }  
     function getMessage(uint _idMensaje) public view returns (string memory) {
         return mensajes[_idMensaje];
     }
-
     function mostraMensajes() public view returns (string[] memory) {
         return mensajes;
     }
